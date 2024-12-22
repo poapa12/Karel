@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #game-container {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 1px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+        }
+        .karel {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+    <h1>Karel - JavaScript</h1>
+    <textarea id="commands" placeholder="Zadejte příkazy..." rows="10" cols="30"></textarea><br>
+    <button onclick="executeCommands()">Proveď příkazy</button>
+    <button onclick="resetGame()">Reset</button>
+
+    <div id="game-container"></div>
+
+    <script>
+        const size = 10;
+        let karelPosition = { x: 0, y: 0 };
+        let karelDirection = 0;
+
+        function createGrid() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = '';
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    container.appendChild(cell);
+                }
+            }
+            updateKarel();
+        }
+
+        function updateKarel() {
+            document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('karel'));
+            const karelCell = document.querySelector(`.cell[data-x='${karelPosition.x}'][data-y='${karelPosition.y}']`);
+            if (karelCell) karelCell.classList.add('karel');
+        }
+
+        function resetGame() {
+            karelPosition = { x: 0, y: 0 };
+            karelDirection = 0;
+            createGrid();
+        }
+
+        function executeCommands() {
+            const commands = document.getElementById('commands').value.split('\n');
+            commands.forEach(command => {
+                const parts = command.trim().split(' ');
+                const action = parts[0]?.toUpperCase();
+                const param = parseInt(parts[1]) || 1;
+
+                switch (action) {
+                    case 'KROK':
+                        moveKarel(param);
+                        break;
+                    case 'VLEVOBOK':
+                        turnKarel(param);
+                        break;
+                    case 'POLOZ':
+                        placeItem(parts[1]);
+                        break;
+                    case 'RESET':
+                        resetGame();
+                        break;
+                }
+            });
+        }
+
+        function moveKarel(steps) {
+            for (let i = 0; i < steps; i++) {
+                switch (karelDirection) {
+                    case 0: karelPosition.x = (karelPosition.x + 1) % size; break;
+                    case 1: karelPosition.y = (karelPosition.y + 1) % size; break; 
+                    case 2: karelPosition.x = (karelPosition.x - 1 + size) % size; break; 
+                    case 3: karelPosition.y = (karelPosition.y - 1 + size) % size; break; 
+                }
+            }
+            updateKarel();
+        }
+
+        function turnKarel(times) {
+            karelDirection = (karelDirection + times) % 4;
+        }
+
+        function placeItem(item) {
+            const cell = document.querySelector(`.cell[data-x='${karelPosition.x}'][data-y='${karelPosition.y}']`);
+            if (cell) cell.textContent = item;
+        }
+
+        createGrid();
+    </script>
+</body>
+</html>
